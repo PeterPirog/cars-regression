@@ -33,7 +33,7 @@ def dataframe_analysis(df,xls_filename='Columns_analysis.xlsx'):
     # get all categorical columns in the dataframe
     catCols = [col for col in df.columns if df[col].dtype == "O"]
     numCols = [col for col in df.columns if not df[col].dtype == "O"]
-    print(output)
+    #print(output)
     return output, catCols, numCols
 
 if __name__ == '__main__':
