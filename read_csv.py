@@ -1,3 +1,6 @@
+# https://www.tensorflow.org/tutorials/load_data/csv?hl=en
+
+
 train_filepaths = 'G:\PycharmProject\cars-regression\datasets\*.csv'
 train_filepaths = 'abalone_train.csv'
 import time
