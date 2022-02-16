@@ -1,0 +1,3 @@
+tf.tensor
+Attributes
+    device result /job:localhost/replica:0/task:0/device:CPU:0  show physical device
