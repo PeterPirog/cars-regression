@@ -1,4 +1,6 @@
 # https://www.tensorflow.org/tutorials/load_data/csv?hl=en
+# https://towardsdatascience.com/build-better-pipelines-with-tensorflow-dataset-328932b16d56
+# https://stackoverflow.com/questions/47091726/difference-between-tf-data-dataset-map-and-tf-data-dataset-apply/47096355
 
 # SETUP
 import pandas as pd
@@ -69,6 +71,8 @@ def func1(x, y):
     # return True
 
 
+
+
 # dataset=dataset.filter(func1)
 dataset = dataset.prefetch(tf.data.AUTOTUNE)
 # Filtering
@@ -76,26 +80,38 @@ dataset = dataset.unbatch().filter(lambda x, y: True if x["Vehicle value"] > 0.0
 dataset = dataset.filter(lambda x, y: True if x["Status"] == 'success' else False)
 # dataset = dataset.map(lambda x, y: -x["Vehicle value"])
 
-dataset = dataset.batch(5).prefetch(tf.data.AUTOTUNE) # tf.data.AUTOTUNE
+
+def func2(x):
+    print(x.items())
+
+    return x
+
+dataset = dataset.apply(lambda x: -1* x['ID'])
+
+
+
+
+dataset = dataset.batch(5).prefetch(tf.data.AUTOTUNE)  # tf.data.AUTOTUNE
 
 # dataset = dataset.filter(lambda x,y: y>0)
-#check types of input features
-input_types={}
+# check types of input features
+input_types = {}
 # Get feature columns
-feature_columns=[]
+
 
 start = time.time()
 for batch, label in dataset.take(1):
     for key, value in batch.items():
         print(f"{key:20s}: {value}")
-        input_types[key]=value.dtype
-        feature_columns.append(key)
+        input_types[key] = value.dtype
     print()
     print(f"{'label':20s}: {label}")
     print()
 end = time.time()
 print(f"Runtime of the program is {end - start}")
 
+feature_columns = list(batch.keys())
+# print(f'feature columns: {feature_columns}')
 print(f'feature columns: {feature_columns}')
 for key in input_types:
     print(f'{key}: {input_types[key]}')
