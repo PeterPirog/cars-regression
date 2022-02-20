@@ -227,12 +227,62 @@ def csv_files_from_dir_to_df(dir_folder, output_file_name='big_text_file.csv', s
     else:
         df = pd.concat(frames, ignore_index=True)
 
+    print('Shuffling output file ....')
+    df = df.sample(frac=1)
+
     print('Saving output file ....')
     df.to_csv(path_or_buf=output_file_name, sep=sep, encoding=encoding, index=False)
 
     print(f'Created file: {output_file_name}')
-
     return df
+
+def filter_single_csv(input_filename_path, output_filename_path, features, target, use_modin_pd=True, log10_target=True,
+                      sep=';', encoding='utf-8'):
+    if use_modin_pd:
+        df = pdm.read_csv(input_filename_path, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False)
+    else:
+        df = pd.read_csv(input_filename_path, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False)
+
+    # FILTER FILE
+    # Remove unusefull columns
+    df = df[features + target].copy()
+
+    # Drop amount values 0 or negative
+    df = df[df['Amount'] > 0.0]
+
+    # Take only  365 days period insurances
+    df = df[df['Insured_days'] == 365]  #
+
+    # Shuffle rows
+    df = df.sample(frac=1)
+
+    # Transform output values by log10(x)
+    if log10_target:
+        df['Amount'] = np.log10(df['Amount'])
+
+    df.to_csv(path_or_buf=output_filename_path, sep=sep, encoding=encoding, index=False)
+    #print(df.head())
+    #print(df.info(verbose=True, null_counts=True))
+
+
+def filter_directory_with_csv(input_dir_folder, output_dir_folder, features, target, sep=';', encoding='utf-8',
+                              use_modin_pd=True, log10_target=True):
+    input_dir_folder = input_dir_folder + '/*.csv'
+
+    glob_files = glob.glob(input_dir_folder)
+    N_files = len(glob_files)
+
+    for i, path in enumerate(glob_files):
+        filename_filtered = 'filtered_' + os.path.basename(path)
+        path_filtered = os.path.join(output_dir_folder, filename_filtered)
+
+        print(f'Reading from file {i + 1}/{N_files}: {path}')
+        filter_single_csv(input_filename_path=path,
+                          output_filename_path=path_filtered,
+                          features=features, target=target,
+                          sep=sep, encoding=encoding,
+                          use_modin_pd=use_modin_pd, log10_target=log10_target)
+
 
 
 if __name__ == '__main__':
