@@ -35,9 +35,12 @@ if __name__ == '__main__':
     output_dir_folder = '/home/ppirog/projects/cars-regression/filtered_dataset'
     output_file_name = 'filtered_file.csv'
 
+    sep=';'
+    encoding = 'utf-8'
+
     filter_directory_with_csv(input_dir_folder, output_dir_folder=output_dir_folder,
-                              features=FEATURES, target=TARGET, sep=';', encoding='utf-8',
+                              features=FEATURES, target=TARGET, sep=sep, encoding=encoding,
                               use_modin_pd=True, log10_target=True)
 
     csv_files_from_dir_to_df(dir_folder=output_dir_folder, output_file_name=output_file_name,
-                             sep=';', encoding='utf-8', use_modin_pd=True)
+                             sep=sep, encoding=encoding, use_modin_pd=True)
