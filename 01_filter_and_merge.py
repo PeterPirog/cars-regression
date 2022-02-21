@@ -8,24 +8,22 @@ This script:
 
 """
 
+#import modin.pandas as pdm
+# import modin.pandas as pd
+#import pandas as pd
 # SETUP
 import ray
 
-# import modin.pandas as pd
-import pandas as pd
-import modin.pandas as pdm
-
 # Show all columns in pandas and modin pandas
-pd.set_option('display.max_columns', None)
-pdm.set_option('display.max_columns', None)
+#pd.set_option('display.max_columns', None)
+#pdm.set_option('display.max_columns', None)
 
-import numpy as np
-from helper_functions import FEATURES, TARGET
-from helper_functions import csv_files_from_dir_to_df
-from helper_functions import filter_directory_with_csv
+#import numpy as np
 
 # Make numpy values easier to read.
-np.set_printoptions(precision=3, suppress=True)
+#np.set_printoptions(precision=3, suppress=True)
+from helper_functions import FEATURES, TARGET
+from helper_functions import filter_directory_with_csv, csv_files_from_dir_to_df
 
 if __name__ == '__main__':
     ray.init()
@@ -35,7 +33,7 @@ if __name__ == '__main__':
     output_dir_folder = '/home/ppirog/projects/cars-regression/filtered_dataset'
     output_file_name = 'filtered_file.csv'
 
-    sep=';'
+    sep = ';'
     encoding = 'utf-8'
 
     filter_directory_with_csv(input_dir_folder, output_dir_folder=output_dir_folder,

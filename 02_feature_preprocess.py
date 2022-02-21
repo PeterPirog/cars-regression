@@ -1,12 +1,6 @@
-# https://www.tensorflow.org/tutorials/load_data/csv?hl=en
-# https://towardsdatascience.com/build-better-pipelines-with-tensorflow-dataset-328932b16d56
-# https://stackoverflow.com/questions/47091726/difference-between-tf-data-dataset-map-and-tf-data-dataset-apply/47096355
 
 # SETUP
-# import pandas as pd
 import ray
-import glob
-import os
 
 # import modin.pandas as pd
 import pandas as pd
@@ -20,14 +14,13 @@ pdm.set_option('display.max_columns', None)
 
 import numpy as np
 from helper_functions import FEATURES, FEATURES_NUMERICAL, FEATURES_CATEGORICAL, TARGET
-from helper_functions import dataframe_analysis, create_small_csv, csv_files_from_dir_to_df
-from helper_functions import filter_directory_with_csv
 
-# FEature engine imports
+
+# Feature engine imports
 from feature_engine.imputation import MeanMedianImputer, CategoricalImputer
-from feature_engine.transformation import YeoJohnsonTransformer
+
 from feature_engine.discretisation import EqualFrequencyDiscretiser
-from feature_engine.selection import SmartCorrelatedSelection, DropConstantFeatures, DropCorrelatedFeatures
+from feature_engine.selection import DropConstantFeatures, DropCorrelatedFeatures
 
 # Make numpy values easier to read.
 np.set_printoptions(precision=3, suppress=True)
@@ -82,39 +75,3 @@ if __name__ == '__main__':
 
     joblib.dump(pipe, 'preprocessing_pipeline.pkl')
     out.to_csv(path_or_buf=preprocessed_filename, sep=sep, encoding=encoding, index=False)
-
-"""
-
-
-
-
-    # numerical values discretization
-    efd = EqualFrequencyDiscretiser(variables=None, q=5, return_object=True,
-                                    return_boundaries=False)
-
-    dcf = DropConstantFeatures(variables=None, tol=0.98, missing_values='ignore')
-    dcorrf = DropCorrelatedFeatures(variables=None, method='pearson', threshold=0.8, missing_values='ignore')
-
-
-    # Pipeline
-    X = mmi.fit_transform(X)
-    X = ci.fit_transform(X)
-    X = dcf.fit_transform(X)
-    X = dcorrf.fit_transform(X)
-
-    for feature in FEATURES_TO_REMOVE_SPACE:
-        X[feature] = X[feature].map(lambda x: x.replace(' ', ''))
-
-    # Discretize numerical values
-    X = efd.fit_transform(X)
-    # Convert all categories to labels
-    X = X.astype(str).apply(lambda x: x.name + '_' + x)
-
-    # print(X.info(verbose=True, null_counts=True))
-    # Add amount log10 value
-    X = X.merge(y_log.rename('Amount_log10'), left_index=True, right_index=True)
-    print(X.head())
-
-    X.to_csv(path_or_buf='text2_data.csv', sep=';', encoding='utf-8', index=False)
-
-"""
