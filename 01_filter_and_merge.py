@@ -24,6 +24,21 @@ import ray
 #np.set_printoptions(precision=3, suppress=True)
 from helper_functions import FEATURES, TARGET
 from helper_functions import filter_directory_with_csv, csv_files_from_dir_to_df
+# import modin.pandas as pdm
+# import modin.pandas as pd
+# import pandas as pd
+# SETUP
+import ray
+
+# Make numpy values easier to read.
+# np.set_printoptions(precision=3, suppress=True)
+from helper_functions import FEATURES, TARGET
+from helper_functions import filter_directory_with_csv, csv_files_from_dir_to_df
+
+# Show all columns in pandas and modin pandas
+# pd.set_option('display.max_columns', None)
+# pdm.set_option('display.max_columns', None)
+# import numpy as np
 
 if __name__ == '__main__':
     ray.init()
