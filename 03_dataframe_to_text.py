@@ -2,8 +2,6 @@
 import ray
 import pandas as pd
 import modin.pandas as pdm
-from sklearn.pipeline import Pipeline
-import joblib
 
 # Show all columns in pandas
 pd.set_option('display.max_columns', None)
@@ -11,8 +9,6 @@ pdm.set_option('display.max_columns', None)
 
 # Make numpy values easier to read.
 import numpy as np
-from helper_functions import TARGET
-
 np.set_printoptions(precision=3, suppress=True)
 
 if __name__ == '__main__':
@@ -22,7 +18,8 @@ if __name__ == '__main__':
     encoding = 'utf-8'
     df = pdm.read_csv(filepath, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False)
 
-    df = df.iloc[:5000]
+    # Line to reduce dataset size for tests
+    #df = df.iloc[:5000]
 
     # Get features column names without the last one - Amount because this is target
     features = list(df.columns)[:-1]
@@ -45,6 +42,7 @@ if __name__ == '__main__':
     # For feature columns add column name and string (categorical) value
     df[features] = df[features].astype(str).apply(lambda x: x.name + '_' + x)
 
+    # Merge categories from all feature columns
     df['Text'] = ''
     for feature in features:
         df['Text'] = df['Text'].map(str) + ' ' + df[feature].map(str)
