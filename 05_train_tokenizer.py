@@ -32,25 +32,26 @@ if __name__ == '__main__':
 
     print(f'train_sentences shape: {train_sentences.shape}')
 
-    # max_vocab_length=1000
+    max_vocab_length=2000 #21660
     max_length=29
 
 
     # Use the default TextVectorization variables
-    text_vectorizer = TextVectorization(max_tokens=None,
+    text_vectorizer = TextVectorization(max_tokens=max_vocab_length,
                                         # how many words in the vocabulary (all of the different words in your text)
                                         standardize="lower_and_strip_punctuation",  # how to process text
                                         split="whitespace",  # how to split tokens
                                         ngrams=None,  # create groups of n-words?
                                         output_mode="int",  # how to map tokens to numbers
-                                        output_sequence_length=max_length)  # how long should the output sequence of tokens be?
+                                        output_sequence_length=max_length,
+                                        name='tokenizer_layer')  # how long should the output sequence of tokens be?
 
     text_vectorizer.adapt(train_sentences)
     vocab = text_vectorizer.get_vocabulary()  # To get words back from token indices
     print(f"Dictionary has: {len(vocab)} words")
 
     #Save vocabulary to file
-    with open('vocabulary.json', 'w') as fp:
+    with open('vocabulary_2k.json', 'w') as fp:
         json.dump(vocab, fp)
 
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     model.add(text_vectorizer)
 
     # Save.
-    filepath = "tokenizer_model"
+    filepath = "tokenizer_model_2k"
     model.save(filepath, save_format="tf")
 
     # Load.
@@ -68,7 +69,7 @@ if __name__ == '__main__':
     loaded_vectorizer = loaded_model.layers[0]
 
     test_sentence="bodykombimpv communebiałystok communebiałobrzegi communebe³¿yce communebe³chatów communebelskduży communebarlinek"
-    test_sentence=train_sentences[1]
+    test_sentence=train_sentences[:2]
     print(loaded_vectorizer(test_sentence))
     print(text_vectorizer(test_sentence))
 

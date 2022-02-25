@@ -9,6 +9,8 @@ This script:
 7. combine transformed features with target value
 8. save dataframe to preprocessed_file.csv
 """
+# TODO Gears should be int not range value
+
 
 # SETUP
 import ray
