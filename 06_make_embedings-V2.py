@@ -1,6 +1,7 @@
 # https://colab.research.google.com/drive/1_hiUXcX6DwGEsPP2iE7i-HAs-5HqQrSe?usp=sharing
 # https://stackoverflow.com/questions/65103526/how-to-save-textvectorization-to-disk-in-tensorflow
 # https://dev.mrdbourke.com/tensorflow-deep-learning/08_introduction_to_nlp_in_tensorflow/#converting-text-into-numbers
+# https://www.intel.com/content/www/us/en/developer/articles/guide/guide-to-tensorflow-runtime-optimizations-for-cpu.html
 
 from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
@@ -10,8 +11,10 @@ import joblib
 import json
 import ray
 import numpy as np
+import os
 
 import tensorflow as tf
+import random
 
 tf.random.set_seed(42)
 tf.config.threading.set_inter_op_parallelism_threads(64)
@@ -19,18 +22,14 @@ tf.config.threading.set_inter_op_parallelism_threads(64)
 from tensorflow.keras import layers
 from tensorflow.keras.layers import TextVectorization
 
+from helper_functions import setSeed, loadCarData
+
+
 if __name__ == '__main__':
     ray.init()
-    filepath = '/home/ppirog/projects/cars-regression/text_dataset.csv'
-    df = pd.read_csv(filepath, sep=';', encoding='utf-8', on_bad_lines='skip', low_memory=False)
 
-    df = df.iloc[:5000]
-
-    train_sentences, val_sentences, train_labels, val_labels = train_test_split(df["Text"].to_numpy(),
-                                                                                df["Amount"].to_numpy(),
-                                                                                test_size=0.05,
-                                                                                random_state=42)
-
+    setSeed(seed=42, threads=64)
+    train_sentences, val_sentences, train_labels, val_labels=loadCarData(number_rows=100000)
     print(f'train_sentences shape: {train_sentences.shape}')
 
     # Load tokenizer model
@@ -55,7 +54,7 @@ if __name__ == '__main__':
     embedings = embedding(x)
     x = layers.GlobalAveragePooling1D()(
         embedings)  # lower the dimensionality of the embedding (try running the model without this layer and see what happens)
-    x = layers.Dropout(0.3)(x)
+  #  x = layers.Dropout(0.3)(x)
     outputs = layers.Dense(1, activation="relu")(
         x)  # create the output layer, want binary outputs so use sigmoid activation
     model = tf.keras.Model(inputs=inputs, outputs=outputs, name="text_model")
@@ -69,18 +68,20 @@ if __name__ == '__main__':
                   metrics=["mse"])
 
     my_callbacks = [
-        tf.keras.callbacks.EarlyStopping(patience=5),
+        tf.keras.callbacks.EarlyStopping(patience=10),
         tf.keras.callbacks.ModelCheckpoint(filepath='regression_model',
                                            monitor="val_loss",
                                            save_best_only=True),
         tf.keras.callbacks.TensorBoard(log_dir='./logs'),
-        tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.1, patience=3, min_lr=1e-6)
+        tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.1, patience=6, min_lr=1e-6)
     ]
 
     # Fit the model
     history = model.fit(train_sentences,
                         train_labels,
                         epochs=500,
+                        shuffle=False,
+                        batch_size=32,
                         validation_data=(val_sentences, val_labels),
                         callbacks=my_callbacks)
 
