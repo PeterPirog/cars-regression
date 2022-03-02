@@ -12,6 +12,7 @@ import json
 import ray
 import numpy as np
 import os
+from datetime import datetime
 
 import tensorflow as tf
 import random
@@ -24,12 +25,11 @@ from tensorflow.keras.layers import TextVectorization
 
 from helper_functions import setSeed, loadCarData
 
-
 if __name__ == '__main__':
     ray.init()
 
     setSeed(seed=42, threads=64)
-    train_sentences, val_sentences, train_labels, val_labels=loadCarData(number_rows=100000)
+    train_sentences, val_sentences, train_labels, val_labels = loadCarData(number_rows=100000)
     print(f'train_sentences shape: {train_sentences.shape}')
 
     # Load tokenizer model
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     embedings = embedding(x)
     x = layers.GlobalAveragePooling1D()(
         embedings)  # lower the dimensionality of the embedding (try running the model without this layer and see what happens)
-  #  x = layers.Dropout(0.3)(x)
+    #  x = layers.Dropout(0.3)(x)
     outputs = layers.Dense(1, activation="relu")(
         x)  # create the output layer, want binary outputs so use sigmoid activation
     model = tf.keras.Model(inputs=inputs, outputs=outputs, name="text_model")
@@ -67,19 +67,24 @@ if __name__ == '__main__':
                   optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                   metrics=["mse"])
 
-    my_callbacks = [
-        tf.keras.callbacks.EarlyStopping(patience=10),
-        tf.keras.callbacks.ModelCheckpoint(filepath='regression_model',
-                                           monitor="val_loss",
-                                           save_best_only=True),
-        tf.keras.callbacks.TensorBoard(log_dir='./logs'),
-        tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.1, patience=6, min_lr=1e-6)
-    ]
+    # Create callbacks
+    #python -m tensorboard.main --logdir logs --bind_all --port=8080
+    logs = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+    tb_callback = tf.keras.callbacks.TensorBoard(log_dir=logs,
+                                                 profile_batch='20, 40')
+
+    my_callbacks = [tb_callback,
+                    tf.keras.callbacks.EarlyStopping(patience=10),
+                    tf.keras.callbacks.ModelCheckpoint(filepath='regression_model',
+                                                       monitor="val_loss",
+                                                       save_best_only=True),
+                    tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.1, patience=6, min_lr=1e-6)
+                    ]
 
     # Fit the model
     history = model.fit(train_sentences,
                         train_labels,
-                        epochs=500,
+                        epochs=2,
                         shuffle=False,
                         batch_size=32,
                         validation_data=(val_sentences, val_labels),
