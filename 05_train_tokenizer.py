@@ -51,7 +51,7 @@ if __name__ == '__main__':
     print(f"Dictionary has: {len(vocab)} words")
 
     #Save vocabulary to file
-    with open('vocabulary_2k.json', 'w') as fp:
+    with open('vocabulary_1k.json', 'w') as fp:
         json.dump(vocab, fp)
 
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     model.add(text_vectorizer)
 
     # Save.
-    filepath = "tokenizer_model_2k"
+    filepath = "tokenizer_model_1k"
     model.save(filepath, save_format="tf")
 
     # Load.
