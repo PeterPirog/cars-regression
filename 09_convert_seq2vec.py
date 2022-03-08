@@ -68,11 +68,39 @@ if __name__ == '__main__':
     regression_model_path = 'regression_model'
 
     setSeed(seed=42, threads=64)
+    train_ds, val_ds, train_sentences, val_sentences, train_labels, val_labels =\
+        loadCarData(source_file=source_file, number_rows=None,return_form='full', batch_size=batch_size)
+
+    #for each in val_ds.take(1):
+    #    print(each)
+
+    seq2vec_model = tf.keras.models.load_model('model_embedings_128_5k_5e')
+
+
+
+    #print(embeded_train_sentences, f'shape={np.shape(embeded_train_sentences)}')
+
+    embeded_train_sentences = seq2vec_model.predict(train_sentences)
+    with open('npdata\embeded_train_sentences.npy', 'wb') as f:
+        np.save(f, embeded_train_sentences)
+
+    embeded_val_sentences = seq2vec_model.predict(val_sentences)
+    with open('npdata\embeded_val_sentences.npy', 'wb') as f:
+        np.save(f, embeded_val_sentences)
+
+    with open('npdata\\train_labels.npy', 'wb') as f:
+        np.save(f, train_labels)
+
+    with open('npdata\\val_labels.npy', 'wb') as f:
+        np.save(f, val_labels)
+
     """
     train_ds, val_ds, train_sentences, val_sentences, \
     train_labels, val_labels = loadCarData(source_file=source_file, number_rows=None,
                                            return_form='full', batch_size=batch_size)
     """
+    """
+
     # for each in val_ds.take(1):
     #    print(each)
 
@@ -94,7 +122,6 @@ if __name__ == '__main__':
 
     print(embeding_model)
 
-    """
 
     # Create  tokenizer model.
     inputs = tf.keras.Input(shape=(1,), dtype=tf.string)

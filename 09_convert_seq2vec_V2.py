@@ -15,6 +15,7 @@ import os
 from datetime import datetime
 
 import tensorflow as tf
+from ray.util.multiprocessing import Pool
 
 from tensorflow.keras import layers
 from tensorflow.keras.layers import TextVectorization
@@ -45,12 +46,12 @@ def convert_nll_2_mu_std(y_pred, invert_log10=True):
     return mu, sigma
 
 
-def nll_mape_metric(y_true, y_pred, k=2.0):
-    mu, sigma = convert_nll_2_mu_std(y_pred, invert_log10=True)
-    y_true = tf.pow(10.0, y_true)
-    mape = 100 * k * sigma / y_true
-    metric = tf.reduce_mean(mape, axis=0)
-    return metric
+def nll_mape_metric(y_true, y_pred,k=2.0):
+   mu, sigma=convert_nll_2_mu_std(y_pred, invert_log10=True)
+   y_true=tf.pow(10.0,y_true)
+   mape=100*k*sigma/y_true
+   metric = tf.reduce_mean(mape, axis=0)
+   return  metric
 
 
 if __name__ == '__main__':
@@ -69,10 +70,66 @@ if __name__ == '__main__':
 
     setSeed(seed=42, threads=64)
     train_ds, val_ds, train_sentences, val_sentences, train_labels, val_labels =\
-        loadCarData(source_file=source_file, number_rows=None,return_form='full', batch_size=batch_size)
+        loadCarData(source_file=source_file, number_rows=1000,return_form='full', batch_size=batch_size)
 
-    for each in val_ds.take(1):
-        print(each)
+    #for each in val_ds.take(1):
+    #    print(each)
+
+    def seq2vec(sequence):
+        seq2vec_model = tf.keras.models.load_model('model_embedings_128_5k_5e')
+        vector = seq2vec_model.predict(sequence)
+        return vector
+
+
+    pool = Pool()
+
+    result=pool.map(seq2vec, train_sentences)
+    print(result)
+
+    """
+    
+        for 
+    #seq2vec_model = tf.keras.models.load_model('model_embedings_128_5k_5e')
+    #vector = seq2vec_model.predict(train_sentences)
+    vector=seq2vec(train_sentences)
+    print(vector)
+
+    
+
+
+    pool = Pool()
+    #https://stackoverflow.com/questions/42172926/pool-map-list-index-out-of-range-python
+    vector=pool.map(seq2vec, train_sentences)
+    #vector=[r for r in vector if r is not None]
+    print(vector)
+    """
+    """
+    for vector in pool.map(seq2vec, train_sentences):
+        #with open('npdata\embeded_train_sentences.npy', 'wb') as f:
+        #    np.save(f, embeded_train_sentences)
+        print(vector)
+
+    
+    for embeded_val_sentences in pool.map(seq2vec_model.predict, val_sentences):
+        with open('npdata\embeded_valn_sentences.npy', 'wb') as f:
+            np.save(f, embeded_val_sentences)
+
+
+    with open('npdata\\train_labels.npy', 'wb') as f:
+        np.save(f, train_labels)
+
+    with open('npdata\\val_labels.npy', 'wb') as f:
+        np.save(f, val_labels)
+
+    
+    train_ds, val_ds, train_sentences, val_sentences, \
+    train_labels, val_labels = loadCarData(source_file=source_file, number_rows=None,
+                                           return_form='full', batch_size=batch_size)
+    """
+    """
+
+    # for each in val_ds.take(1):
+    #    print(each)
 
     # Load tokenizer model
 
@@ -81,20 +138,27 @@ if __name__ == '__main__':
 
     # Define embeding layer
     embedding = layers.Embedding(input_dim=max_vocab_length,  # set input shape
-                                 output_dim=256,  # set size of embedding vector
+                                 output_dim=128,  # set size of embedding vector
                                  embeddings_initializer="uniform",  # default, intialize randomly
                                  input_length=max_length,  # how long is each input
                                  name="embedding_1")
 
+    filepath_embeding_model='/home/ppirog/projects/cars-regression/regression_model'
+    embeding_model=tf.keras.models.load_model(filepath_embeding_model,
+                                              custom_objects = {"_tf_keras_metric": nll_loss})
+
+    print(embeding_model)
+
+
     # Create  tokenizer model.
     inputs = tf.keras.Input(shape=(1,), dtype=tf.string)
     x = loaded_model(inputs)
-    x= embedding(x)
+    embedings = embedding(x)
     x = tf.keras.layers.Lambda(lambda y: tf.cast(y, tf.dtypes.bfloat16))(x)
-    seq2vec = layers.GlobalAveragePooling1D()(x)
-    outputs = layers.Dense(2, activation="linear")(seq2vec)
+    x = layers.GlobalAveragePooling1D()(embedings)
+    outputs = layers.Dense(2, activation="linear")(x)
     model = tf.keras.Model(inputs=inputs, outputs=outputs, name="text_model")
-    model_embedings = tf.keras.Model(inputs=inputs, outputs=seq2vec, name="seq2vec_model")
+    model_embedings = tf.keras.Model(inputs=inputs, outputs=embedings, name="embedings_model")
 
     model.summary()
 
@@ -102,6 +166,8 @@ if __name__ == '__main__':
     model.compile(loss=nll_loss,  # "mse"
                   optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                   metrics=[nll_mape_metric])
+
+   
 
     # Create callbacks
     # python -m tensorboard.main --logdir logs --bind_all --port=12301
@@ -118,25 +184,15 @@ if __name__ == '__main__':
                     ]
 
     # Fit the model
-    history = model.fit(train_ds,
+    history = model.fit(train_ds,  # train_sentences,
+                        # train_labels,
                         epochs=5,
                         shuffle=False,
                         batch_size=batch_size,
-                        validation_data=val_ds,
+                        validation_data=val_ds,  # (val_sentences, val_labels),
                         callbacks=my_callbacks)
 
-    model_embedings.save('model_embedings_256_5k_5e', save_format="tf")
-
-    """
-    pred_orig=model_embedings.predict(train_sentences)
-
-    print(pred_orig,f'shape={np.shape(pred_orig)}')
-    loaded_model=tf.keras.models.load_model('model_embedings')
-    pred_loaded = loaded_model.predict(train_sentences)
-    print(pred_loaded, f'shape={np.shape(pred_loaded)}')
-    print(f'diff={abs(pred_loaded-pred_orig)}')
-    """
-
+    model_embedings.save('model_embedings', save_format="tf")
     # model.save("regression_model")
     result = model.evaluate(val_sentences, val_labels)
 
@@ -160,3 +216,4 @@ if __name__ == '__main__':
     predictions = model.predict(train_sentences)
     mu, sigma = convert_nll_2_mu_std(predictions)
     print(mu, sigma)
+    """

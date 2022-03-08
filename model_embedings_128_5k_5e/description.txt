@@ -1,0 +1,15 @@
+106040/106040 [==============================] - ETA: 0s - loss: -4.5534 - nll_mape_metric: 150.72572022-03-07 19:34:34.710027: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+106040/106040 [==============================] - 1702s 16ms/step - loss: -4.5534 - nll_mape_metric: 150.7257 - val_loss: -5.1967 - val_nll_mape_metric: 145.4322 - lr: 0.0010
+Epoch 2/5
+106040/106040 [==============================] - 1658s 16ms/step - loss: -5.2038 - nll_mape_metric: 148.3699 - val_loss: -5.3093 - val_nll_mape_metric: 145.6013 - lr: 0.0010
+Epoch 3/5
+106040/106040 [==============================] - 1602s 15ms/step - loss: -5.3832 - nll_mape_metric: 147.8215 - val_loss: -5.3349 - val_nll_mape_metric: 145.4727 - lr: 0.0010
+Epoch 4/5
+106040/106040 [==============================] - 1622s 15ms/step - loss: -5.5361 - nll_mape_metric: 147.3503 - val_loss: -5.2866 - val_nll_mape_metric: 145.4468 - lr: 0.0010
+Epoch 5/5
+106040/106040 [==============================] - 1665s 16ms/step - loss: -5.6710 - nll_mape_metric: 146.9437 - val_loss: -5.2003 - val_nll_mape_metric: 146.0264 - lr: 0.0010
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+5582/5582 [==============================] - 41s 7ms/step - loss: -5.2025 - nll_mape_metric: 146.0419
+{'loss': [-4.553377151489258, -5.203849792480469, -5.383222579956055, -5.536121368408203, -5.670987129211426], 'nll_mape_metric': [150.72569274902344, 148.36993408203125, 147.82147216796875, 147.3502960205078, 146.9436798095703], 'val_loss': [-5.196651935577393, -5.309309482574463, -5.33493185043335, -5.286583423614502, -5.200296878814697], 'val_nll_mape_metric': [145.43223571777344, 145.60128784179688, 145.47271728515625, 145.44679260253906, 146.0264129638672], 'lr': [0.001, 0.001, 0.001, 0.001, 0.001]}
+(5000, 128)
+Files: embedding_vectors_tmp.tsv, embedding_metadata_tmp.tsv are saved.
