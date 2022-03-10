@@ -17,27 +17,21 @@ def train_net(config):
 
     X_train, X_test, y_train, y_test = load_data()
 
-    epochs = 5
+    epochs = 5000
     # define model
     inputs = tf.keras.layers.Input(shape=(X_train.shape[1]), dtype=tf.float32)
 
     x = tf.keras.layers.Flatten()(inputs)
     x = tf.keras.layers.LayerNormalization()(x)
-    x = tf.keras.layers.GaussianNoise(stddev=config["noise_std"])(x)
-    # layer 1
-    x = tf.keras.layers.Dense(units=config["hidden1"], kernel_initializer='glorot_normal',
-                              activation=config["activation"])(x)
-    # x = tf.keras.layers.LayerNormalization()(x)
-    x = tf.keras.layers.Dropout(config["dropout1"])(x)
-    # layer 2
-    x = tf.keras.layers.Dense(units=config["hidden2"], kernel_initializer='glorot_normal',
-                              activation=config["activation"])(x)
-    # x = tf.keras.layers.LayerNormalization()(x)
-    x = tf.keras.layers.Dropout(config["dropout2"])(x)
+
+    for i in range(config["hidden_layers"]):
+        x = tf.keras.layers.Dense(units=config["hidden1"], kernel_initializer='glorot_normal',
+                                  activation=config["activation"])(x)
+        x = tf.keras.layers.Dropout(config["dropout1"])(x)
 
     outputs = tf.keras.layers.Dense(units=1)(x)
 
-    model = tf.keras.Model(inputs=inputs, outputs=outputs, name="boston_model")
+    model = tf.keras.Model(inputs=inputs, outputs=outputs, name="insurance_model")
 
     model.compile(
         loss='mean_squared_error',  # mean_squared_logarithmic_error "mse"
@@ -80,7 +74,7 @@ if __name__ == "__main__":
     analysis = tune.run(
         train_net,
         search_alg=HyperOptSearch(),
-        name="keras2",
+        name="embeding_model",
         scheduler=sched_asha,
         # Checkpoint settings
         keep_checkpoints_num=3,
@@ -94,7 +88,7 @@ if __name__ == "__main__":
             # "mean_accuracy": 0.99,
             "training_iteration": 500
         },
-        num_samples=10,  # number of samples from hyperparameter space
+        num_samples=100,  # number of samples from hyperparameter space
         reuse_actors=True,
         # Data and resources
         local_dir='/home/ppirog/projects/cars-regression/ray_results',
@@ -106,17 +100,17 @@ if __name__ == "__main__":
         config={
             # training parameters
             "batch": tune.choice([128]),
-            "noise_std": tune.uniform(0.01, 0.4),
+            #"noise_std": tune.uniform(0.01, 0.4),
             "learning_rate": tune.choice([0.001]),
             # Layer 1 params
-            "hidden1": tune.randint(3, 10),
+            "hidden1": tune.randint(3, 200),
             "activation": tune.choice(["elu"]),
             "dropout1": tune.uniform(0.01, 0.15),
-            # Layer 2 params
-            "hidden2": tune.randint(3, 10),
-            "dropout2": tune.uniform(0.01, 0.15),  # tune.choice([0.01, 0.02, 0.05, 0.1, 0.2])
-
+            "hidden_layers": tune.randint(1, 3)
         }
 
     )
     print("Best result:", analysis.best_result, "Best hyperparameters found were: ", analysis.best_config)
+    logs='/home/ppirog/projects/cars-regression/ray_results'
+    # python -m tensorboard.main --logdir logs --bind_all --port=12301
+    # python -m tensorboard.main --logdir /home/ppirog/projects/cars-regression/ray_results --bind_all --port=12301
