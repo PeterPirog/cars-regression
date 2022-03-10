@@ -81,17 +81,17 @@ if __name__ == '__main__':
     #print(embeded_train_sentences, f'shape={np.shape(embeded_train_sentences)}')
 
     embeded_train_sentences = seq2vec_model.predict(train_sentences)
-    with open('npdata\embeded_train_sentences.npy', 'wb') as f:
+    with open('/home/ppirog/projects/cars-regression/npdata/embeded_train_sentences.npy', 'wb') as f:
         np.save(f, embeded_train_sentences)
 
     embeded_val_sentences = seq2vec_model.predict(val_sentences)
-    with open('npdata\embeded_val_sentences.npy', 'wb') as f:
+    with open('/home/ppirog/projects/cars-regression/npdata/embeded_val_sentences.npy', 'wb') as f:
         np.save(f, embeded_val_sentences)
 
-    with open('npdata\\train_labels.npy', 'wb') as f:
+    with open('/home/ppirog/projects/cars-regression/npdata/train_labels.npy', 'wb') as f:
         np.save(f, train_labels)
 
-    with open('npdata\\val_labels.npy', 'wb') as f:
+    with open('/home/ppirog/projects/cars-regression/npdata/val_labels.npy', 'wb') as f:
         np.save(f, val_labels)
 
     """

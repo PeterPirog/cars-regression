@@ -23,16 +23,16 @@ from tensorflow.keras.layers import TextVectorization
 from helper_functions import setSeed  # , loadCarData
 
 # Equivalent to the two lines above
-from tensorflow.keras import mixed_precision
+#from tensorflow.keras import mixed_precision
 from tools.general_tools import nll_loss, embedings2tsv_files, create_training_plots
 from tools.domain_tools import loadCarData
 
 import math
 
-policy = mixed_precision.Policy('bfloat16')  #
+#policy = mixed_precision.Policy('bfloat16')  #
 # mixed_precision.set_global_policy(policy)
-print('Compute dtype: %s' % policy.compute_dtype)
-print('Variable dtype: %s' % policy.variable_dtype)
+#print('Compute dtype: %s' % policy.compute_dtype)
+#print('Variable dtype: %s' % policy.variable_dtype)
 
 
 def convert_nll_2_mu_std(y_pred, invert_log10=True):
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # Path to save complete regression model
     regression_model_path = 'regression_model'
 
-    setSeed(seed=42, threads=64)
+    #setSeed(seed=42, threads=64)
     train_ds, val_ds, train_sentences, val_sentences, train_labels, val_labels =\
         loadCarData(source_file=source_file, number_rows=1000,return_form='full', batch_size=batch_size)
 
