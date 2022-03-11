@@ -3,27 +3,20 @@
 # https://dev.mrdbourke.com/tensorflow-deep-learning/08_introduction_to_nlp_in_tensorflow/#converting-text-into-numbers
 # https://www.intel.com/content/www/us/en/developer/articles/guide/guide-to-tensorflow-runtime-optimizations-for-cpu.html
 
-from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 # import pandas as pd
-import modin.pandas as pd
-import joblib
-import json
 import ray
 import numpy as np
-import os
 from datetime import datetime
 
 import tensorflow as tf
-import random
 
 # tf.random.set_seed(42)
 # tf.config.threading.set_inter_op_parallelism_threads(64)
 
 from tensorflow.keras import layers
-from tensorflow.keras.layers import TextVectorization
 
-from helper_functions import setSeed, loadCarData
+from archive.helper_functions import setSeed, loadCarData
 
 # Equivalent to the two lines above
 from tensorflow.keras import mixed_precision

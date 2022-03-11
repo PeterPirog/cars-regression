@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # All files and directories ending with .txt and that don't begin with a dot:
 
-    df = csv_files_from_dir_to_df('/ai-data/estimates-data-2021_1_2022_1', use_modin_pd=True,output_file_name='text_data.csv')
+    df = csv_files_from_dir_to_df('/ai-data/estimates-data-2021_1_2022_1', use_modin_pd=True, output_file_name='text_data.csv')
 
 
 

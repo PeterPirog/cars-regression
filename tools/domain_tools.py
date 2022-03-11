@@ -1,6 +1,9 @@
+import glob
+import os
 import numpy as np
 import tensorflow as tf
-import pandas as pd
+import modin.pandas as pd
+
 pd.set_option('display.max_columns', None)
 from sklearn.model_selection import train_test_split
 
@@ -8,15 +11,16 @@ from tools.domain_settings import sep, encoding
 
 try:
     import ray
+
     ray.init()
-    import modin.pandas as pdm
-    pdm.set_option('display.max_columns', None)
+    # import modin.pandas as pdm
+    pd.set_option('display.max_columns', None)
 except:
     pass
 
 
-def filter_single_csv(input_filename_path, output_filename_path, features, target, use_modin_pd=True, log10_target=True,
-                      sep=';', encoding='utf-8',shuffle=True):
+def filter_single_csv(input_filename_path, output_filename_path, features, target, log10_target=True,
+                      sep=';', encoding='utf-8', shuffle=True):
     """
 
     :param input_filename_path:  string,path to input file to filter
@@ -24,7 +28,6 @@ def filter_single_csv(input_filename_path, output_filename_path, features, targe
     :param features: list of strings, dafault=None, list of column in original dataframe to copy to output dataframe,
     if None, all columns are copied to the input dataframe
     :param target: string or list with single string, default = None, name of column with target value
-    :param use_modin_pd: bool, default=True, if True try to use modin.pandas, if False use typical pandas
     :param log10_target: bool, default=True, if True target value is converted to log10(x), it reduces long tails in the
     input data distributions
     :param sep: string, default=';', separator used in input csv files
@@ -33,10 +36,7 @@ def filter_single_csv(input_filename_path, output_filename_path, features, targe
     :return: dataframe with file
     """
 
-    if use_modin_pd:
-        df = pd.read_csv(input_filename_path, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False)
-    else:
-        df = pd.read_csv(input_filename_path, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False)
+    df = pd.read_csv(input_filename_path, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False)
 
     # FILTER FILE
     # Remove unusefull columns if are defined
@@ -63,8 +63,9 @@ def filter_single_csv(input_filename_path, output_filename_path, features, targe
     df.to_csv(path_or_buf=output_filename_path, sep=sep, encoding=encoding, index=False)
     return df
 
-def loadCarData(source_file,number_rows=None,
-                batch_size=32,return_form='nparray',random_state=42):
+
+def loadCarData(source_file, number_rows=None,
+                batch_size=32, return_form='nparray', random_state=42):
     """
                 Function creates train and validation data as datasets or np arrays
     :param source_file: 
@@ -74,10 +75,8 @@ def loadCarData(source_file,number_rows=None,
     :param random_state: 
     :return: 
     """
-    try: # Try use modin.pandas
-        df = pdm.read_csv(source_file, sep=';', encoding='utf-8', on_bad_lines='skip', low_memory=False)
-    except:
-        df = pd.read_csv(source_file, sep=';', encoding='utf-8', on_bad_lines='skip', low_memory=False)
+
+    df = pd.read_csv(source_file, sep=';', encoding='utf-8', on_bad_lines='skip', low_memory=False)
 
     if number_rows is not None:
         df = df.iloc[:number_rows]
@@ -86,9 +85,10 @@ def loadCarData(source_file,number_rows=None,
                                                                                 df["Amount"].to_numpy(),
                                                                                 test_size=0.05,
                                                                                 random_state=random_state)
-    if return_form=='nparray':
+    if return_form == 'nparray':
         # Return np arrays
-        print(f'Function returns numpy arrays in form: train_sentences, val_sentences, train_labels, val_labels =loadCarData(...)')
+        print(
+            f'Function returns numpy arrays in form: train_sentences, val_sentences, train_labels, val_labels =loadCarData(...)')
         return train_sentences, val_sentences, train_labels, val_labels
     else:
         # Return datasets
@@ -130,23 +130,51 @@ def loadCarData(source_file,number_rows=None,
             .batch(batch_size=batch_size, drop_remainder=True) \
             .cache() \
             .prefetch(AUTOTUNE)
-        if return_form=='datasets':
-            return train_ds,val_ds
+        if return_form == 'datasets':
+            return train_ds, val_ds
         else:
-            return train_ds, val_ds,train_sentences, val_sentences, train_labels, val_labels
+            return train_ds, val_ds, train_sentences, val_sentences, train_labels, val_labels
 
 
+def filter_directory_with_csv(input_dir_folder, output_dir_folder, features, target, sep=';', encoding='utf-8',
+                              log10_target=True):
+    input_dir_folder = input_dir_folder + '/*.csv'
+
+    glob_files = glob.glob(input_dir_folder)
+    N_files = len(glob_files)
+
+    for i, path in enumerate(glob_files):
+        filename_filtered = 'filtered_' + os.path.basename(path)
+        path_filtered = os.path.join(output_dir_folder, filename_filtered)
+
+        print(f'Reading from file {i + 1}/{N_files}: {path}')
+        filter_single_csv(input_filename_path=path,
+                          output_filename_path=path_filtered,
+                          features=features, target=target,
+                          sep=sep, encoding=encoding, log10_target=log10_target)
 
 
+def csv_files_from_dir_to_df(dir_folder, output_file_name='big_text_file.csv', sep=';', encoding='utf-8'):
+    dir_folder = dir_folder + '/*.csv'
+    glob_files = glob.glob(dir_folder)
+    N_files = len(glob_files)
 
+    frames = []
+    for i, path in enumerate(glob_files):
+        print(f'Reading from file {i + 1}/{N_files}: {path}')
 
+        frames.append(pd.read_csv(path, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False))
 
+    df = pd.concat(frames, ignore_index=True)
 
+    print('Shuffling output file ....')
+    df = df.sample(frac=1)
 
+    print('Saving output file ....')
+    df.to_csv(path_or_buf=output_file_name, sep=sep, encoding=encoding, index=False)
 
-
-
-
+    print(f'Created file: {output_file_name}')
+    return df
 
 
 ##### TEMPORARY IMPORTS
@@ -157,12 +185,12 @@ if __name__ == '__main__':
     input_file = '/ai-data/estimates-data-2021_1_2022_1/estimates-data-encoded-ic-hashed-2021_2022-1_1_2022_1_31.csv'
     output_file = '/home/ppirog/projects/cars-regression/filtered_dataset2/output.csv'
 
-    df=filter_single_csv(input_filename_path=input_file,
-                      output_filename_path=output_file,
-                      features=FEATURES,
-                      target=TARGET, use_modin_pd=True, log10_target=True,
-                      sep=sep, encoding=encoding,shuffle=True)
+    df = filter_single_csv(input_filename_path=input_file,
+                           output_filename_path=output_file,
+                           features=FEATURES,
+                           target=TARGET, log10_target=True,
+                           sep=sep, encoding=encoding, shuffle=True)
 
     print(df.head())
     print(df.info(verbose=True, null_counts=True))
-    print(dataframe_analysis(df,xls_filename='small_analysis.xlsx'))
+    print(dataframe_analysis(df, xls_filename='small_analysis.xlsx'))

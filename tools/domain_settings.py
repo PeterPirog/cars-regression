@@ -2,9 +2,15 @@
 This file contains settings to model and training process
 
 """
+########## PATH SETTINGS #######################
+input_source_dir_folder = '/ai-data/utf_encoded_data'
+output_filtered_dir_folder = '/home/ppirog/projects/cars-regression/filtered_dataset'
+output_filtered_file_name = 'filtered_file.csv'
+
 #####  PANDAS SETTINGS #########################
 sep=';'
 encoding='utf-8'
+log10_target=True
 
 
 ###### FEATURES AND TARGET #####################
