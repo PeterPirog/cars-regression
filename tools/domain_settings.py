@@ -8,10 +8,9 @@ output_filtered_dir_folder = '/home/ppirog/projects/cars-regression/filtered_dat
 output_filtered_file_name = 'filtered_file.csv'
 
 #####  PANDAS SETTINGS #########################
-sep=';'
-encoding='utf-8'
-log10_target=True
-
+sep = ';'
+encoding = 'utf-8'
+log10_target = True
 
 ###### FEATURES AND TARGET #####################
 # Target value to predict
@@ -179,3 +178,13 @@ FEATURES_NUMERICAL = ['Capacity_ccm',
 
 # All features
 FEATURES = FEATURES_CATEGORICAL + FEATURES_NUMERICAL
+# This integer value features are converted to categories
+FEATURES_INT_TO_OBJ = ['Gears', 'Doors', 'Key_pairs']
+# This feature values have spaces, spaces are replaced
+FEATURES_TO_REMOVE_SPACE_FROM_CATEGORIES = ['Generation_type', 'Version_type_name', 'Commune']
+
+# PREPROCESSING SETTINGS
+# split histogram into N bins
+number_of_bins_for_numeric_features = 5
+# drop feature if 98 % of values are identical
+drop_constant_threshold = 0.98

@@ -154,7 +154,8 @@ def filter_directory_with_csv(input_dir_folder, output_dir_folder, features, tar
                           sep=sep, encoding=encoding, log10_target=log10_target)
 
 
-def csv_files_from_dir_to_df(dir_folder, output_file_name='big_text_file.csv', sep=';', encoding='utf-8'):
+def csv_files_from_dir_to_df(dir_folder, output_file_name='big_text_file.csv', sep=';', encoding='utf-8',
+                             select_N_rows=None):
     dir_folder = dir_folder + '/*.csv'
     glob_files = glob.glob(dir_folder)
     N_files = len(glob_files)
@@ -169,6 +170,11 @@ def csv_files_from_dir_to_df(dir_folder, output_file_name='big_text_file.csv', s
 
     print('Shuffling output file ....')
     df = df.sample(frac=1)
+
+    if select_N_rows is not None:
+        N = int(select_N_rows)
+        df = df.iloc[:N]
+        output_file_name = output_file_name.replace('.csv', '_' + str(N) + '.csv')
 
     print('Saving output file ....')
     df.to_csv(path_or_buf=output_file_name, sep=sep, encoding=encoding, index=False)

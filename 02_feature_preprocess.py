@@ -10,7 +10,7 @@ This script:
 8. save dataframe to preprocessed_file.csv
 """
 # TODO Gears should be int not range value
-
+# https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingClassifier.html
 
 # SETUP
 import ray
@@ -25,7 +25,9 @@ pdm.set_option('display.max_columns', None)
 
 
 import numpy as np
-from helper_functions import TARGET
+from tools.domain_settings import TARGET,FEATURES_INT_TO_OBJ
+from tools.domain_settings import  sep,encoding
+from tools.domain_settings import number_of_bins_for_numeric_features,drop_constant_threshold
 
 # Feature engine imports
 from feature_engine.imputation import MeanMedianImputer, CategoricalImputer
@@ -35,30 +37,29 @@ from feature_engine.selection import DropConstantFeatures
 # Make numpy values easier to read.
 np.set_printoptions(precision=3, suppress=True)
 
-FEATURES_TO_REMOVE_SPACE = ['Generation_type', 'Version_type_name', 'Commune']
+#FEATURES_TO_REMOVE_SPACE_FROM_CATEGORIES = ['Generation_type', 'Version_type_name', 'Commune']
 # These features are originally numerical but converted to categories
-FEATURES_INT_TO_OBJ = ['Gears', 'Doors', 'Key_pairs']
+#FEATURES_INT_TO_OBJ = ['Gears', 'Doors', 'Key_pairs']
 
 
 if __name__ == '__main__':
-    ray.init()
+    #ray.init()
 
+    #filepath = '/home/ppirog/projects/cars-regression/filtered_file_10000.csv'
     filepath = '/home/ppirog/projects/cars-regression/filtered_file.csv'
     preprocessed_filename = 'preprocessed_file.csv'
-    sep = ';'
-    encoding = 'utf-8'
-    number_of_bins_for_numeric_features = 5
-    drop_constant_threshold = 0.98
+   #sep = ';'
+    #encoding = 'utf-8'
+    #number_of_bins_for_numeric_features = 5
+    #drop_constant_threshold = 0.98
 
     df = pd.read_csv(filepath, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False)
-
     # split df to X and y
     y = df.pop(TARGET[0])
     X = df.copy()
     del df
 
-    # Convert individually some int features to categories
-    X[FEATURES_INT_TO_OBJ] = X[FEATURES_INT_TO_OBJ].astype(object)
+
 
 
 
@@ -84,13 +85,40 @@ if __name__ == '__main__':
         ('DropConstantFeatures3', dcf98),
     ])
 
-    out= pipe.fit_transform(X, y)
+    # Convert individually some int features to categories
+    X[FEATURES_INT_TO_OBJ] = X[FEATURES_INT_TO_OBJ].astype(object)
+    out = pipe.fit_transform(X, y)
     out = pd.concat([out, y], axis=1)
+
+    """
+    import joblib
+    from ray.util.joblib import register_ray
+
+    
+    register_ray()
+    with joblib.parallel_backend('ray'):
+        df = pd.read_csv(filepath, sep=sep, encoding=encoding, on_bad_lines='skip', low_memory=False)
+
+        # split df to X and y
+        y = df.pop(TARGET[0])
+        X = df.copy()
+        del df
+
+        # Convert individually some int features to categories
+        X[FEATURES_INT_TO_OBJ] = X[FEATURES_INT_TO_OBJ].astype(object)
+        out= pipe.fit_transform(X, y)
+        out = pd.concat([out, y], axis=1)
+    """
+
+
+    #out= pipe.fit_transform(X, y)
+    #out = pd.concat([out, y], axis=1)
 
     print(out.info(verbose=True, show_counts=True))
     print(out.head())
 
     # Save files
-    joblib.dump(pipe, 'preprocessing_pipeline.pkl')
+    #joblib.dump(pipe, 'preprocessing_pipeline.pkl')
     out.to_csv(path_or_buf=preprocessed_filename, sep=sep, encoding=encoding, index=False)
 
+    #ray.shutdown()
