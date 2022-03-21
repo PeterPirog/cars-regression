@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     filepath = '/home/ppirog/projects/cars-regression/filtered_file_10000.csv'
     #filepath = '/home/ppirog/projects/cars-regression/filtered_file.csv'
-    preprocessed_filename = 'preprocessed_file.csv'
+    preprocessed_filename = '../preprocessed_file.csv'
     sep = ';'
     encoding = 'utf-8'
     number_of_bins_for_numeric_features = 5

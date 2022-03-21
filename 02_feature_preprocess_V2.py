@@ -101,26 +101,37 @@ if __name__ == '__main__':
     ])
     print(f'X type is: {type(X)}')
 
+    X = dcf98.fit_transform(X, y).copy()
+
     # Impute numeric features
     medians = {}
     for i,feature in enumerate(FEATURES_NUMERICAL):
-        print(f'{i+1}/{len(FEATURES_NUMERICAL)}: Median imputer for the feature:{feature}')
-        mmi = MeanMedianImputer(imputation_method='median', variables=[feature])
-        X = mmi.fit_transform(X, y)
+        if feature in X.columns:
+            print(f'{i+1}/{len(FEATURES_NUMERICAL)}: Median imputer for the feature:{feature}')
+            mmi = MeanMedianImputer(imputation_method='median', variables=[feature])
+            X = mmi.fit_transform(X, y)
+        else:
+            print(f'Feature:{feature} not exist in dataframe !')
 
     # Impute categorical features by 'missing' label
 
     for i,feature in enumerate(FEATURES_CATEGORICAL):
-        print(f'{i+1}/{len(FEATURES_NUMERICAL)}: Categorical missing imputer for the feature:{feature}')
-        ci = CategoricalImputer(imputation_method='missing', fill_value='Missing', variables=[feature],
-                                return_object=False, ignore_format=False)
-        X = ci.fit_transform(X, y)
-
+        if feature in X.columns:
+            print(f'{i+1}/{len(FEATURES_NUMERICAL)}: Categorical missing imputer for the feature:{feature}')
+            ci = CategoricalImputer(imputation_method='missing', fill_value='Missing', variables=[feature],
+                                    return_object=False, ignore_format=False)
+            X = ci.fit_transform(X, y)
+        else:
+            print(f'Feature:{feature} not exist in dataframe !')
 
     out=X
+
+    out = dcf98.fit_transform(out, y)
+    out = efd.fit_transform(out, y)
+    out = dcf98.fit_transform(out, y)
     """
 
-    
+    ŻLE WYLICZANA MEDIANA !!! bo liczy zera
     
     out = mmi.fit_transform(X, y)
     out = imp_mean.fit_transform(X, y)
