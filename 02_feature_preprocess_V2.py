@@ -129,59 +129,8 @@ if __name__ == '__main__':
     out = dcf98.fit_transform(out, y)
     out = efd.fit_transform(out, y)
     out = dcf98.fit_transform(out, y)
-    """
-
-    ŻLE WYLICZANA MEDIANA !!! bo liczy zera
-    
-    out = mmi.fit_transform(X, y)
-    out = imp_mean.fit_transform(X, y)
-import joblib
-from ray.util.joblib import register_ray
-register_ray()
-with joblib.parallel_backend('ray'):
-    search.fit(digits.data, digits.target)
-    
-    
-    out=mmi.fit_transform(X,y)
-    out=ci.fit_transform(out,y)
-    out = dcf98.fit_transform(out, y)
-    out = efd.fit_transform(out, y)
-    out = dcf98.fit_transform(out, y) 
-    
-    
-    
-    print('1:',psutil.virtual_memory().percent)
-    #print('2:', psutil.virtual_memory().percent)
-    #X1 = dcf98.fit_transform(X, y).copy()
-    #print(X1.info(verbose=True, show_counts=True))
-    #del X
-    print('3:', psutil.virtual_memory().percent)
-    X2 = mmi.fit_transform(X, y).copy()
-    print('4:', psutil.virtual_memory().percent)
-    #del X1
-    print('5:', psutil.virtual_memory().percent)
-    X3 = ci.fit_transform(X2, y).copy()
-    print('6:', psutil.virtual_memory().percent)
-    del X2
-    print('7:', psutil.virtual_memory().percent)
-    X4 = dcf98.fit_transform(X3, y).copy()
-    print('8:', psutil.virtual_memory().percent)
-    del X3
-    print('9:', psutil.virtual_memory().percent)
-    X5 = efd.fit_transform(X4, y).copy()
-    print('10:', psutil.virtual_memory().percent)
-    del X4
-    print('11:', psutil.virtual_memory().percent)
-    out = dcf98.fit_transform(X5, y).copy()
-    print('12:', psutil.virtual_memory().percent)
-    del X5
-    print('13:', psutil.virtual_memory().percent)
-
-    #out = pipe.fit_transform(X, y)
 
     out = pd.concat([out, y], axis=1)
-    print('14:', psutil.virtual_memory().percent)
-    """
     print(out.info(verbose=True, show_counts=True))
     print(out.head())
 
